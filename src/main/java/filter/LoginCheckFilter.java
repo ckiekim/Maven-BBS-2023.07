@@ -18,16 +18,14 @@ import javax.servlet.http.HttpSession;
  */
 @WebFilter({"/board/*", "/user/list", "/user/logout",
 						"/user/update", "/user/delete", "/user/deleteConfirm"})
-public class BbsFilter extends HttpFilter implements Filter {
+public class LoginCheckFilter extends HttpFilter implements Filter {
 
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 		HttpServletRequest httpRequest = (HttpServletRequest) request;
 		HttpServletResponse httpResponse = (HttpServletResponse) response;
-		
-		request.setCharacterEncoding("utf-8");
+		HttpSession session = httpRequest.getSession();
 		
 		// 로그인을 안했으면 로그인 화면으로 이동
-		HttpSession session = httpRequest.getSession();
 		String sessionUid = (String) session.getAttribute("uid");
 		if (sessionUid == null || sessionUid.equals("")) {
 			httpResponse.sendRedirect("/bbs/user/login");
