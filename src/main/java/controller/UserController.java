@@ -12,7 +12,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 
+import org.mindrot.jbcrypt.BCrypt;
+
 import db.UserDao;
+import entity.User;
 
 /**
  * Servlet implementation class UserController
@@ -34,6 +37,7 @@ public class UserController extends HttpServlet {
 		UserDao uDao = new UserDao();
 		
 		RequestDispatcher rd = null;
+		User user = null;
 		switch (action) {
 		case "list":
 			rd = request.getRequestDispatcher("/WEB-INF/view/user/list.jsp");
@@ -69,9 +73,26 @@ public class UserController extends HttpServlet {
 					filePart.write(PROFILE_PATH + filename);
 				}
 				
-				// uid가 중복?
-				// pwd == pwd2?
-				response.sendRedirect("/bbs/user/login");
+				// uid가 중복 --> 등록 화면
+				if (uDao.getUser(uid) != null) {
+					request.setAttribute("msg", "사용자 ID가 중복되었습니다.");
+					request.setAttribute("url", "/bbs/user/register");
+					rd = request.getRequestDispatcher("/WEB-INF/view/common/alertMsg.jsp");
+					rd.forward(request, response);
+				} else if (!pwd.equals(pwd2)) { 	// pwd != pwd2 --> 등록 화면
+					request.setAttribute("msg", "패스워드 입력이 잘못되었습니다.");
+					request.setAttribute("url", "/bbs/user/register");
+					rd = request.getRequestDispatcher("/WEB-INF/view/common/alertMsg.jsp");
+					rd.forward(request, response);
+				} else {
+					String hashedPwd = BCrypt.hashpw(pwd, BCrypt.gensalt());
+					user = new User(uid, hashedPwd, uname, email, filename, addr);
+					uDao.insertUser(user);
+					request.setAttribute("msg", "등록을 마쳤습니다. 로그인하세요.");
+					request.setAttribute("url", "/bbs/user/login");
+					rd = request.getRequestDispatcher("/WEB-INF/view/common/alertMsg.jsp");
+					rd.forward(request, response);
+				}
 			}
 			break;
 		}
