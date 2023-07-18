@@ -103,4 +103,36 @@ public class UserDao {
 			e.printStackTrace();
 		}
 	}
+	
+	public void updateUser(User user) {
+		Connection conn = getConnection();
+		String sql = "update users set uname=?, email=?, profile=?, addr=? where uid=?";
+		try {
+			PreparedStatement pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, user.getUname());
+			pstmt.setString(2, user.getEmail());
+			pstmt.setString(3, user.getProfile());
+			pstmt.setString(4, user.getAddr());
+			pstmt.setString(5, user.getUid());
+			
+			pstmt.executeUpdate();
+			pstmt.close(); conn.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void deleteUser(String uid) {
+		Connection conn = getConnection();
+		String sql = "update users set isDeleted=1 where uid=?";
+		try {
+			PreparedStatement pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, uid);
+			
+			pstmt.executeUpdate();
+			pstmt.close(); conn.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }

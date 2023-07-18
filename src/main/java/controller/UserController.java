@@ -1,5 +1,6 @@
 package controller;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +43,8 @@ public class UserController extends HttpServlet {
 		RequestDispatcher rd = null;
 		User user = null;
 		String uid = null, pwd = null, pwd2 = null, uname = null, email = null, addr = null;
+		String filename = null;
+		Part filePart = null;
 		switch (action) {
 		case "list":
 			String page_ = request.getParameter("page");
@@ -104,10 +107,9 @@ public class UserController extends HttpServlet {
 				pwd2 = request.getParameter("pwd2");
 				uname = request.getParameter("uname");
 				email = request.getParameter("email");
-				Part filePart = request.getPart("profile");
+				filePart = request.getPart("profile");
 				addr = request.getParameter("addr");
 				
-				String filename = null;
 				try {
 					filename = filePart.getSubmittedFileName();
 					int dotPosition = filename.indexOf(".");
@@ -144,6 +146,51 @@ public class UserController extends HttpServlet {
 			session.invalidate();
 			response.sendRedirect("/bbs/user/login");
 			break;
+		case "update":
+			if (request.getMethod().equals("GET")) {
+				uid = request.getParameter("uid");
+				user = uDao.getUser(uid);
+				request.setAttribute("user", user);
+				rd = request.getRequestDispatcher("/WEB-INF/view/user/update.jsp");
+				rd.forward(request, response);
+			} else {
+				uid = request.getParameter("uid");
+				String oldFilename = request.getParameter("filename");
+				uname = request.getParameter("uname");
+				email = request.getParameter("email");
+				filePart = request.getPart("profile");
+				addr = request.getParameter("addr");
+				try {
+					filename = filePart.getSubmittedFileName();
+					if (!(oldFilename == null || oldFilename.equals(""))) {
+						File oldFile = new File(PROFILE_PATH + oldFilename);
+						oldFile.delete();
+					}
+					int dotPosition = filename.indexOf(".");
+					String firstPart = filename.substring(0, dotPosition);
+					filename = filename.replace(firstPart, uid);
+					filePart.write(PROFILE_PATH + filename);
+				} catch (Exception e) {
+					System.out.println("프로필 사진을 변경하지 않았습니다.");
+				}
+				filename = (filename == null) ? oldFilename : filename;
+				user = new User(uid, uname, email, filename, addr);
+				uDao.updateUser(user);
+				response.sendRedirect("/bbs/user/list?page=" + session.getAttribute("currentUserPage"));
+			}
+			break;
+		case "delete":
+			uid = request.getParameter("uid");
+			rd = request.getRequestDispatcher("/WEB-INF/view/user/delete.jsp?uid=" + uid);
+			rd.forward(request, response);
+			break;
+		case "deleteConfirm":
+			uid = request.getParameter("uid");
+			uDao.deleteUser(uid);
+			response.sendRedirect("/bbs/user/list?page=" + session.getAttribute("currentUserPage"));
+			break;
+		default:
+			System.out.println(request.getRequestURI() + " 잘못된 경로입니다.");
 		}
 	}
 
