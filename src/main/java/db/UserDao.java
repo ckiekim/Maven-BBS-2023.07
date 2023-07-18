@@ -3,7 +3,10 @@ package db;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -44,6 +47,43 @@ public class UserDao {
 		return user;
 	}
 	
+	public List<User> getUserList(int page) {
+		List<User> list = new ArrayList<User>();
+		int offset = (page - 1) * 10;
+		Connection conn = getConnection();
+		String sql = "select * from users where isDeleted=0 order by regDate desc, uid limit 10 offset ?";
+		try {
+			PreparedStatement pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, offset);
+			
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next()) {
+				User user = new User(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4),
+						LocalDate.parse(rs.getString(5)), rs.getInt(6), rs.getString(7), rs.getString(8));
+				list.add(user);
+			}
+			rs.close(); pstmt.close(); conn.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return list;
+	}
+	
+	public int getUserCount() {
+		int count = 0;
+		Connection conn = getConnection();
+		String sql = "select count(uid) from users where isDeleted=0";
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery(sql);
+			while (rs.next()) {
+				count = rs.getInt(1);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return count;
+	}
 	
 	public void insertUser(User user) {
 		Connection conn = getConnection();
