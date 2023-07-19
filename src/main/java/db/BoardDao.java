@@ -3,6 +3,7 @@ package db;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +25,24 @@ public class BoardDao {
 			e.printStackTrace();
 		}
 		return conn;
+	}
+	
+	public int getBoardCount(String field, String query) {
+		int count = 0;
+		Connection conn = getConnection();
+		String sql = "select count(bid) from board where isDeleted=0 AND " + field + " LIKE ?";
+		try {
+			PreparedStatement pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, "%"+query+"%");
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next()) {
+				count = rs.getInt(1);
+			}
+			rs.close(); pstmt.close(); conn.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return count;
 	}
 	
 	public List<Board> listBoard(String field, String query, int page) {

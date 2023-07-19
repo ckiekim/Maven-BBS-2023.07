@@ -1,6 +1,8 @@
 package controller;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.RequestDispatcher;
@@ -25,6 +27,8 @@ import entity.Board;
 		maxRequestSize = 1024 * 1024 * 10
 )
 public class BoardController extends HttpServlet {
+	public static final int LIST_PER_PAGE = 10;		// 한 페이지당 글 목록의 갯수
+	public static final int PAGE_PER_SCREEN = 10;	// 한 화면에 표시되는 페이지 갯수
 
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String[] uri = request.getRequestURI().split("/");
@@ -46,9 +50,26 @@ public class BoardController extends HttpServlet {
 			page = (page_ == null || page_.equals("")) ? 1 : Integer.parseInt(page_);
 			field = (field == null || field.equals("")) ? "title" : field;
 			query = (query == null || query.equals("")) ? "" : query;
-			session.setAttribute("currentBoardPage", page);
+			
 			List<Board> list = bDao.listBoard(field, query, page);
+			
+			int totalBoardCount = bDao.getBoardCount(field, query);
+			int totalPages = (int) Math.ceil(totalBoardCount / (double) LIST_PER_PAGE);
+			int startPage = (int) Math.ceil((page-0.5)/PAGE_PER_SCREEN - 1) * PAGE_PER_SCREEN + 1;
+			int endPage = Math.min(totalPages, startPage + PAGE_PER_SCREEN - 1);
+			List<String> pageList = new ArrayList<String>();
+			for (int i = startPage; i <= endPage; i++)
+				pageList.add(String.valueOf(i));
+			
+			session.setAttribute("currentBoardPage", page);
 			request.setAttribute("boardList", list);
+			request.setAttribute("field", field);
+			request.setAttribute("query", query);
+			request.setAttribute("today", LocalDate.now().toString());
+			request.setAttribute("totalPages", totalPages);
+			request.setAttribute("startPage", startPage);
+			request.setAttribute("endPage", endPage);
+			request.setAttribute("pageList", pageList);
 			
 			rd = request.getRequestDispatcher("/WEB-INF/view/board/list.jsp");
 			rd.forward(request, response);
