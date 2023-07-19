@@ -46,6 +46,7 @@ public class BoardController extends HttpServlet {
 			page = (page_ == null || page_.equals("")) ? 1 : Integer.parseInt(page_);
 			field = (field == null || field.equals("")) ? "title" : field;
 			query = (query == null || query.equals("")) ? "" : query;
+			session.setAttribute("currentBoardPage", page);
 			List<Board> list = bDao.listBoard(field, query, page);
 			request.setAttribute("boardList", list);
 			
