@@ -91,22 +91,17 @@
                         <form class="form-inline" action="/bbs/reply/write" method="post">
                             <input type="hidden" name="bid" value="${board.bid}">
                             <input type="hidden" name="uid" value="${board.uid}">
-                            <!-- <label for="comment" class="ml-5 mt-3 mr-3">댓글</label>
-                			<textarea class="ml-3 mt-3 mr-3" id="comment" name="comment" rows="3" cols="80"></textarea>
-                			<button type="submit" class="btn btn-primary ml-3 mt-3 mr-5">등록</button> -->
-                            <table class="table table-borderless mt-2">
-                                <tr class="d-flex">
-                                    <td class="col-1 text-end">
-                                        <label for="commnet">댓글</label>
-                                    </td>
-                                    <td class="col-9">
-                                        <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
-                                    </td>
-                                    <td class="col-2">
-                                        <button type="submit" class="btn btn-primary">등록</button>
-                                    </td>
-                                </tr>
-                            </table>
+                            <div class="row d-flex mt-2">
+                            	<div class="col-1 align-self-center">
+                            		<span class="ms-4">댓글</span>
+                            	</div>
+	                            <div class="col-9 align-self-center">
+	                				<textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
+	                			</div>
+	                			<div class="col-2 align-self-center">
+	                				<button type="submit" class="btn btn-primary ms-3">등록</button>
+	                			</div>
+                			</div>
                         </form>
                     </div>
                 </div>
