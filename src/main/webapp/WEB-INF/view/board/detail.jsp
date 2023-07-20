@@ -96,7 +96,7 @@
                             		<span class="ms-4">댓글</span>
                             	</div>
 	                            <div class="col-9 align-self-center">
-	                				<textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
+	                				<textarea class="form-control" name="comment" rows="3"></textarea>
 	                			</div>
 	                			<div class="col-2 align-self-center">
 	                				<button type="submit" class="btn btn-primary ms-3">등록</button>
