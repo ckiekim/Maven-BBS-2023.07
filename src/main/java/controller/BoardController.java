@@ -13,9 +13,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
 
 import db.BoardDao;
+import db.ReplyDao;
 import entity.Board;
+import entity.Reply;
+import utility.JsonUtil;
 
 /**
  * Servlet implementation class BoardController
@@ -29,6 +33,7 @@ import entity.Board;
 public class BoardController extends HttpServlet {
 	public static final int LIST_PER_PAGE = 10;		// 한 페이지당 글 목록의 갯수
 	public static final int PAGE_PER_SCREEN = 10;	// 한 화면에 표시되는 페이지 갯수
+	public static final String UPLOAD_PATH = "c:/Temp/upload/";
 
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String[] uri = request.getRequestURI().split("/");
@@ -37,10 +42,12 @@ public class BoardController extends HttpServlet {
 		String sessionUid = (String) session.getAttribute("uid");
 		session.setAttribute("menu", "board");
 		BoardDao bDao = new BoardDao();
+		ReplyDao rDao = new ReplyDao();
+		JsonUtil ju = new JsonUtil();
 		
 		RequestDispatcher rd = null;
 		int bid = 0, page = 0;
-		String title = null, content = null, files = null;
+		String title = null, content = null, files = null, uid = null;
 		Board board = null;
 		switch (action) {
 		case "list":
@@ -74,6 +81,27 @@ public class BoardController extends HttpServlet {
 			rd = request.getRequestDispatcher("/WEB-INF/view/board/list.jsp");
 			rd.forward(request, response);
 			break;
+		case "detail":
+			bid = Integer.parseInt(request.getParameter("bid"));
+			uid = request.getParameter("uid");
+			String option = request.getParameter("option");
+			// 본인이 조회한 경우 또는 댓글 작성후에는 조회수를 증가시키지 않음
+			if (!uid.equals(sessionUid) && (option==null || option.equals("")))
+				bDao.increaseViewCount(bid);
+			
+			board = bDao.getBoard(bid);
+			String jsonFiles = board.getFiles();
+			if (!(jsonFiles == null || jsonFiles.equals(""))) {
+				List<String> fileList = ju.jsonToList(jsonFiles);
+				request.setAttribute("fileList", fileList);
+			}
+			request.setAttribute("board", board);
+			List<Reply> replyList = rDao.getReplyList(bid);
+			request.setAttribute("replyList", replyList);
+			
+			rd = request.getRequestDispatcher("/WEB-INF/view/board/detail.jsp");
+			rd.forward(request, response);
+			break;
 		case "write":
 			if (request.getMethod().equals("GET")) {
 				rd = request.getRequestDispatcher("/WEB-INF/view/board/write.jsp");
@@ -81,6 +109,19 @@ public class BoardController extends HttpServlet {
 			} else {
 				title = request.getParameter("title");
 				content = request.getParameter("content");
+				
+				List<Part> fileParts = (List<Part>) request.getParts();
+				List<String> fileList = new ArrayList<String>();
+				for (Part part: fileParts) {
+					String filename = part.getSubmittedFileName();
+					if (filename == null)
+						continue;
+					
+					part.write(UPLOAD_PATH + filename);
+					fileList.add(filename);
+				}
+				files = ju.listToJson(fileList);
+				
 				board = new Board(sessionUid, title, content, files);
 				bDao.insertBoard(board);
 				response.sendRedirect("/bbs/board/list?p=1&f=&q=");
