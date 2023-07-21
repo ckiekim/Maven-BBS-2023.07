@@ -155,7 +155,10 @@ public class UserController extends HttpServlet {
 				rd.forward(request, response);
 			} else {
 				uid = request.getParameter("uid");
+				String hashedPwd = request.getParameter("hashedPwd");
 				String oldFilename = request.getParameter("filename");
+				pwd = request.getParameter("pwd");
+				pwd2 = request.getParameter("pwd2");
 				uname = request.getParameter("uname");
 				email = request.getParameter("email");
 				filePart = request.getPart("profile");
@@ -174,7 +177,9 @@ public class UserController extends HttpServlet {
 					System.out.println("프로필 사진을 변경하지 않았습니다.");
 				}
 				filename = (filename == null || filename.equals("")) ? oldFilename : filename;
-				user = new User(uid, uname, email, filename, addr);
+				if (pwd != null && pwd.length() > 1 && pwd.equals(pwd2))
+					hashedPwd = BCrypt.hashpw(pwd, BCrypt.gensalt());
+				user = new User(uid, hashedPwd, uname, email, filename, addr);
 				uDao.updateUser(user);
 				session.setAttribute("uname", uname);
 				session.setAttribute("email", email);
