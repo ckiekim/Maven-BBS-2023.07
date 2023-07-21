@@ -146,7 +146,7 @@ public class BoardController extends HttpServlet {
 				fileList = (List<String>) session.getAttribute("fileList");
 				if (fileList != null && fileList.size() > 0) {
 					String[] delFiles = request.getParameterValues("delFile");
-					if (delFiles.length > 0) {
+					if (delFiles != null && delFiles.length > 0) {
 						for (String delFile: delFiles) {
 							fileList.remove(delFile);			// fileList에서 삭제
 							File df = new File(UPLOAD_PATH + delFile);	// 실제 파일 삭제
@@ -172,6 +172,19 @@ public class BoardController extends HttpServlet {
 				response.sendRedirect("/bbs/board/detail?bid=" + bid + "&uid=" + sessionUid);
 			}
 			break;
+		case "delete":
+			bid = Integer.parseInt(request.getParameter("bid"));
+			rd = request.getRequestDispatcher("/WEB-INF/view/board/delete.jsp?bid=" + bid);
+			rd.forward(request, response);
+			break;
+		case "deleteConfirm":
+			bid = Integer.parseInt(request.getParameter("bid"));
+			bDao.deleteBoard(bid);
+			response.sendRedirect("/bbs/board/list?p=" + session.getAttribute("currentBoardPage") + "&f=&q=");
+			break;
+		default:
+			rd = request.getRequestDispatcher("/WEB-INF/view/error/error404.jsp");
+			rd.forward(request, response);
 		}
 	}
 	
