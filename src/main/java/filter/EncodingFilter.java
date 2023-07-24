@@ -16,6 +16,7 @@ import javax.servlet.http.HttpSession;
 /**
  * Servlet Filter implementation class BbsFilter
  */
+// @WebFilter("/*")
 @WebFilter({"/aside/*", "/board/*", "/file/*", "/reply/*", "/user/*"})
 public class EncodingFilter extends HttpFilter implements Filter {
 

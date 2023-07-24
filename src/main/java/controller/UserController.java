@@ -82,6 +82,7 @@ public class UserController extends HttpServlet {
 					session.setAttribute("profile", user.getProfile());
 					
 					// 상태 메세지
+					// D:\JavaWorkspace\.metadata\.plugins\org.eclipse.wst.server.core\tmp0\wtpwebapps\bbs\WEB-INF/data/todayQuote.txt
 					String quoteFile = getServletContext().getRealPath("/") + "WEB-INF/data/todayQuote.txt";
 					AsideUtil au = new AsideUtil();
 					String stateMsg = au.getTodayQuote(quoteFile);
